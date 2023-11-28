@@ -25,7 +25,7 @@ test.describe("Categories tests", () => {
       window.localStorage.setItem("auth-token", value);
     }, token);
     await page.goto("/overview");
-    await page.context().storageState({ path: "auth.json" });
+    //await page.context().storageState({ path: "auth.json" });
   });
 
   test("Create a category", async ({ page }) => {

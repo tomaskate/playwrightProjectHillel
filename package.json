@@ -3,9 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "scripts": {
-    "testLocal": "npx playwright test --ui"
-  },
+  "scripts": {},
   "author": "",
   "license": "ISC",
   "devDependencies": {
