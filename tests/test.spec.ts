@@ -1,9 +1,9 @@
 import { test, expect, Page } from "@playwright/test";
 import { ApiHelper } from "../helpers/apiHelper";
-import { DbHelper } from "../helpers/dbHelper";
 import { NavigationMenu } from "../pom/components/navigationMenu";
 import { Assortment } from "../pom/assortment";
 import { OrderCreation } from "../pom/orderCreation";
+import { History } from "../pom/history";
 import { faker } from "@faker-js/faker";
 
 test.describe("Categories tests", () => {
@@ -21,7 +21,7 @@ test.describe("Categories tests", () => {
   });
 
   test.beforeEach(async ({ page }) => {
-    page.addInitScript((value) => {
+    await page.addInitScript((value) => {
       window.localStorage.setItem("auth-token", value);
     }, token);
     await page.goto("/overview");
@@ -34,22 +34,26 @@ test.describe("Categories tests", () => {
     await navigationMenu.navigate("Асортимент");
     await page.waitForLoadState("networkidle");
     await assortment.clickOnAddBtn();
-    await page.pause();
     await assortment.fillCategoryForm(categoryName);
     const responsePromise = page.waitForResponse("/api/category");
     await assortment.saveCategory();
+    await assortment.assertPresenceOfAddPositionBtn();
     const response = await responsePromise;
     const parsed = await response.json();
     categoryId = parsed._id;
-    console.log(categoryId);
-    //await page.waitForLoadState("networkidle");
+    //console.log(categoryId);
   });
 
   test("Add positions", async () => {
-    for (let i = 1; i <= numberPositions; i++) {
+    for (let i = 0; i < numberPositions; i++) {
       const positionName = faker.lorem.word();
       const costNumber = faker.number.int({ max: 100 });
-      await ApiHelper.createPosition(token, positionName, costNumber, categoryId);
+      await ApiHelper.createPosition(
+        token,
+        positionName,
+        costNumber,
+        categoryId
+      );
     }
   });
 
@@ -64,14 +68,18 @@ test.describe("Categories tests", () => {
     const orderResponsePromise = page.waitForResponse("/api/order");
     const orderResponse = await orderResponsePromise;
     const parsedOrder = await orderResponse.json();
-    orderNumber = parsedOrder.order;
-    console.log(orderNumber)
+    orderNumber = parsedOrder.order.toString();
   });
 
-  test.skip("Filter the order", async ({ page }) => {
+  test("Filter the order", async ({ page }) => {
     let navigationMenu = new NavigationMenu(page);
+    let history = new History(page);
     await navigationMenu.navigate("Історія");
-    await ApiHelper.filterById(orderNumber);
+    await history.clickOnFilterIcon();
+    await history.enterOrderNumber(orderNumber);
+    await page.pause();
+    await history.applyFilter();
+    await history.assertCorrectOrderInTable(orderNumber);
   });
 
   test("Delete category and validate in DB", async ({ page }) => {
@@ -80,6 +88,6 @@ test.describe("Categories tests", () => {
     await navigationMenu.navigate("Асортимент");
     await assortment.selectCategory(categoryName);
     await assortment.deleteSelectedCategory();
-    console.log(DbHelper.getCategories(categoryId));
+    await assortment.assertAbsenceByName(categoryName);
   });
 });

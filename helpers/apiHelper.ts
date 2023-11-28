@@ -46,14 +46,4 @@ export class ApiHelper {
     const serializedResponse = await response.json();
     return serializedResponse;
   }
-
-  static async filterById(orderNumber: string) {
-    const context = await this.context();
-    const response = await context.get("api/order", {
-      params: {
-        order: orderNumber,
-      },
-    });
-    expect(response.ok()).toBeTruthy();
-  }
 }

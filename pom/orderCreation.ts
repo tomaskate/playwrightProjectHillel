@@ -29,7 +29,7 @@ export class OrderCreation {
 
     async fill(number:number) {
       for (let i = 0; i < number; i++) {
-        const randomNumber = Math.round(Math.random() * 100);
+        const randomNumber = Math.round((Math.random() * 100)+1);
         await this.amount.nth(i).clear();
         await this.amount.nth(i).fill(String(randomNumber));
         await this.addBtn.nth(i).click();

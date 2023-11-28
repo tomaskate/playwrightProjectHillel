@@ -7,6 +7,7 @@ export class Assortment {
   readonly downloadImageButton: Locator;
   readonly saveBtn: Locator;
   readonly deleteBtn: Locator;
+  readonly addPositionBtn: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -15,6 +16,7 @@ export class Assortment {
     this.downloadImageButton = page.getByText("Завантажити зображення");
     this.saveBtn = page.getByText("Зберегти зміни");
     this.deleteBtn = page.getByRole("button").filter({ hasText: "delete" });
+    this.addPositionBtn = page.locator("button:has-text('Додати позицію')");
   }
 
   async clickOnAddBtn() {
@@ -43,7 +45,16 @@ export class Assortment {
   async deleteSelectedCategory() {
     this.page.on("dialog", (dialog) => dialog.accept());
     await this.deleteBtn.click();
-    //await page.waitForTimeout(5000);
-    // await page.waitForLoadState("networkidle");
+    await this.page.waitForLoadState("networkidle");
+  }
+
+  async assertPresenceOfAddPositionBtn() {
+    await expect(this.addPositionBtn).toBeVisible();
+  }
+
+  async assertAbsenceByName(name:string) {
+    await expect(
+      this.page.locator(".collection-item").filter({ hasText: name })
+    ).not.toBeVisible();
   }
 }
